@@ -555,6 +555,7 @@
                                     <th>Designation</th>
                                     <th>Salary Base</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -971,12 +972,51 @@
                             <td>${e.firstName} ${e.lastName}</td>
                             <td>${e.email}</td>
                             <td>${e.position}</td>
-                            <td>$${e.salary.toLocaleString()}</td>
+                            <td>$${e.salary.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                             <td><span class="status-badge ${e.status === 'ACTIVE' ? 'status-active' : 'status-suspended'}">${e.status}</span></td>
+                            <td>
+                                <button onclick="triggerUpdateSalary(${e.id}, '${e.firstName} ${e.lastName}', ${e.salary})" class="btn" style="padding: 4px 8px; font-size: 0.75rem; background: var(--accent-color);">Update Salary</button>
+                            </td>
                         </tr>
                     `;
                 });
             } catch (err) { console.error("Error loading roster data:", err); }
+        }
+
+        async function triggerUpdateSalary(id, name, currentSalary) {
+            const newSal = prompt(`Update Salary for ${name}.\nCurrent Salary: $${currentSalary.toLocaleString()}\nEnter new target base salary ($):`);
+            if (newSal === null || newSal.trim() === "") return;
+            const targetSalary = parseFloat(newSal);
+            if (isNaN(targetSalary) || targetSalary <= 0) {
+                alert("Please enter a valid salary amount.");
+                return;
+            }
+
+            const reason = prompt("Enter reason for salary adjustment:");
+            if (reason === null) return;
+
+            try {
+                const response = await fetch('/api/employees/update-salary', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        employeeId: id,
+                        newSalary: targetSalary,
+                        reason: reason,
+                        adminUserId: currentUserId
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`Salary for ${name} updated successfully!`, "success");
+                    loadRosterData();
+                    loadDashboardData();
+                } else {
+                    showToast("Failed to update salary: " + result.message, "danger");
+                }
+            } catch(err) {
+                showToast("Network error: " + err, "danger");
+            }
         }
 
         async function loadLeaveData() {
