@@ -1,0 +1,25 @@
+# Maven Target Directory
+target/
+*.class
+
+# Maven installation directory
+maven/
+
+# Temp/logs
+*.log
+exports/
+
+# OS/IDE configs
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.DS_Store
+Thumbs.db
+
+# Local temporary packages
+Adoptium/
+adoptium/
+*.zip
+*.tar.gz

@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayrollX AI - Enterprise Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --sidebar-color: #111827;
+            --card-color: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent-color: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* Utility Styles */
+        .glass-card {
+            background: var(--card-color);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px 0 rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-secondary {
+            background: #475569;
+        }
+
+        /* Login Page */
+        #login-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1e293b 0%, #0b0f19 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-box {
+            width: 400px;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-box p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+        }
+
+        /* Layout Grid */
+        #app-layout {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            width: 260px;
+            background: var(--sidebar-color);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .logo-section {
+            margin-bottom: 40px;
+        }
+
+        .logo-section h2 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .user-panel {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-panel-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .user-panel-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .user-panel-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main Workspace */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+            padding: 40px;
+            gap: 32px;
+        }
+
+        .view-section {
+            display: none;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .view-section.active {
+            display: flex;
+        }
+
+        /* Dashboard View components */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+
+        .metric-title {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Data Tables */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(30, 41, 59, 0.4);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        td {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* AI Assistant Interface */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .chat-history {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-bubble {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .chat-bubble.bot {
+            background: var(--card-color);
+            border: 1px solid var(--border-color);
+            align-self: flex-start;
+        }
+
+        .chat-bubble.user {
+            background: var(--accent-color);
+            align-self: flex-end;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            border-top: 1px solid var(--border-color);
+            padding: 16px;
+            gap: 12px;
+            background: var(--sidebar-color);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        /* Notifications & Toast Alert */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--card-color);
+            border-left: 4px solid var(--accent-color);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: none;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-active, .status-approved { background: rgba(16, 185, 129, 0.15); color: var(--success-color); }
+        .status-suspended, .status-rejected { background: rgba(239, 68, 68, 0.15); color: var(--danger-color); }
+        .status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning-color); }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOAST ALERTS -->
+    <div id="toast" class="toast"></div>
+
+    <!-- 2. LOGIN OVERLAY -->
+    <div id="login-page">
+        <div class="glass-card login-box" style="max-height: 90vh; overflow-y: auto;">
+            <h1>PayrollX AI</h1>
+            <p id="auth-subtitle">Enterprise Payroll & Workforce Portal</p>
+            
+            <!-- Login Form -->
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" class="form-control" placeholder="e.g. admin" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" placeholder="e.g. password" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 12px;">Access Account</button>
+                <p style="margin-top: 16px; font-size: 0.85rem; color: var(--text-secondary);">
+                    Employee without an account? 
+                    <a href="#" onclick="toggleAuthMode('register')" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Register here</a>
+                </p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label for="reg-firstname">First Name</label>
+                        <input type="text" id="reg-firstname" class="form-control" placeholder="Sarah" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-lastname">Last Name</label>
+                        <input type="text" id="reg-lastname" class="form-control" placeholder="Connor" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">Email Address</label>
+                    <input type="email" id="reg-email" class="form-control" placeholder="sarah.c@company.com" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label for="reg-phone">Phone</label>
+                        <input type="text" id="reg-phone" class="form-control" placeholder="9999888877">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-bank">Bank Account</label>
+                        <input type="text" id="reg-bank" class="form-control" placeholder="BANK_ACC_100" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label for="reg-username">Username</label>
+                        <input type="text" id="reg-username" class="form-control" placeholder="sarah_c" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Password</label>
+                        <input type="password" id="reg-password" class="form-control" placeholder="password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 12px;">Register & Create Profile</button>
+                <p style="margin-top: 16px; font-size: 0.85rem; color: var(--text-secondary);">
+                    Already have an account? 
+                    <a href="#" onclick="toggleAuthMode('login')" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Login here</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. MAIN PORTAL -->
+    <div id="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside>
+            <div class="logo-section">
+                <h2>PayrollX AI</h2>
+            </div>
+            <ul class="nav-list">
+                <li id="nav-overview" class="nav-item active" onclick="switchView('dashboard')">Overview</li>
+                <li id="nav-employees" class="nav-item" onclick="switchView('employees')">Employees</li>
+                <li id="nav-leaves" class="nav-item" onclick="switchView('leaves')">Leave Requests</li>
+                <li id="nav-ai" class="nav-item" onclick="switchView('ai')">AI HR Assistant</li>
+                <li id="nav-anomalies" class="nav-item" onclick="switchView('anomalies')">Fraud Checks</li>
+                <li id="nav-analytics" class="nav-item" onclick="switchView('analytics')">Cost Predictions</li>
+            </ul>
+            <div class="user-panel">
+                <div class="user-panel-info">
+                    <span id="user-display-name" class="user-panel-name">Session Active</span>
+                    <span id="user-display-role" class="user-panel-role">-</span>
+                </div>
+                <button onclick="logout()" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.8rem;">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- 3a. Overview View -->
+            <section id="dashboard" class="view-section active">
+                <h1 class="view-title">Overview</h1>
+                <!-- Admin Metrics Panel -->
+                <div id="admin-metrics" class="metrics-grid">
+                    <div class="glass-card">
+                        <div class="metric-title">Total Active Employees</div>
+                        <div id="metric-emp-count" class="metric-value">0</div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="metric-title">Workforce Monthly Cost</div>
+                        <div id="metric-payroll-cost" class="metric-value">$0.00</div>
+                    </div>
+                </div>
+
+                <!-- Employee Personal Metrics Panel -->
+                <div id="employee-metrics" class="metrics-grid" style="display: none;">
+                    <div class="glass-card">
+                        <div class="metric-title">My Base Salary</div>
+                        <div id="my-salary" class="metric-value">$0.00</div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="metric-title">My Position</div>
+                        <div id="my-position" class="metric-value">-</div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="metric-title">My Bank Account</div>
+                        <div id="my-bank" class="metric-value">-</div>
+                    </div>
+                </div>
+
+                <!-- Admin Department Analysis Table -->
+                <div id="dept-analysis-card" class="glass-card">
+                    <h3 style="margin-bottom: 16px;">Department Cost Analysis</h3>
+                    <div class="table-container">
+                        <table id="dept-table">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Budget Limit</th>
+                                    <th>Actual Cost</th>
+                                    <th>Utilization Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Employee Personal Info Profile Card -->
+                <div id="employee-profile-card" class="glass-card" style="display: none;">
+                    <h3 style="margin-bottom: 16px;">My Employment Profile</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; font-size: 0.95rem;">
+                        <div><strong style="color: var(--text-secondary);">Employee ID:</strong> <span id="my-emp-id">-</span></div>
+                        <div><strong style="color: var(--text-secondary);">Full Name:</strong> <span id="my-fullname">-</span></div>
+                        <div><strong style="color: var(--text-secondary);">Email Address:</strong> <span id="my-email">-</span></div>
+                        <div><strong style="color: var(--text-secondary);">Phone Number:</strong> <span id="my-phone">-</span></div>
+                        <div><strong style="color: var(--text-secondary);">Employment Status:</strong> <span class="status-badge status-active" id="my-status">-</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3b. Employees View -->
+            <section id="employees" class="view-section">
+                <h1 class="view-title">Employee Roster</h1>
+                <div class="glass-card">
+                    <div class="table-container">
+                        <table id="emp-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email Address</th>
+                                    <th>Designation</th>
+                                    <th>Salary Base</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3c. Leaves View -->
+            <section id="leaves" class="view-section">
+                <h1 id="leaves-title" class="view-title">Leave Request Management</h1>
+                
+                <!-- Manager Approvals Table -->
+                <div id="manager-leaves-card" class="glass-card">
+                    <h3 style="margin-bottom: 16px;">Pending Team Approvals</h3>
+                    <div class="table-container">
+                        <table id="leaves-table">
+                            <thead>
+                                <tr>
+                                    <th>Req ID</th>
+                                    <th>Emp ID</th>
+                                    <th>Leave Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Employee Submit Leave Request & History Panel -->
+                <div id="employee-leaves-container" style="display: none; flex-direction: column; gap: 24px;">
+                    <div class="glass-card" style="max-width: 600px;">
+                        <h3 style="margin-bottom: 16px;">Request Time Off</h3>
+                        <form id="submit-leave-form" onsubmit="submitNewLeave(event)">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label for="leave-type">Leave Type</label>
+                                    <select id="leave-type" class="form-control" required style="background: rgba(15, 23, 42, 0.6); color: var(--text-primary);">
+                                        <option value="SICK">Sick Leave</option>
+                                        <option value="ANNUAL">Annual Leave</option>
+                                        <option value="CASUAL">Casual Leave</option>
+                                        <option value="MATERNITY">Maternity/Paternity</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="leave-reason">Reason / Comments</label>
+                                    <input type="text" id="leave-reason" class="form-control" placeholder="e.g. Travel, Sick day" required>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label for="leave-start-date">Start Date</label>
+                                    <input type="date" id="leave-start-date" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="leave-end-date">End Date</label>
+                                    <input type="date" id="leave-end-date" class="form-control" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn" style="margin-top: 12px;">Submit Request</button>
+                        </form>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3 style="margin-bottom: 16px;">My Leave Requests</h3>
+                        <div class="table-container">
+                            <table id="my-leaves-table">
+                                <thead>
+                                    <tr>
+                                        <th>Req ID</th>
+                                        <th>Leave Type</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Status</th>
+                                        <th>Manager Comment</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3d. AI Assistant View -->
+            <section id="ai" class="view-section">
+                <h1 class="view-title">Natural Language HR Assistant</h1>
+                <div class="chat-container">
+                    <div id="chat-history" class="chat-history">
+                        <div class="chat-bubble bot">Hello! Ask me any questions, e.g.:
+- "show my salary breakup"
+- "remaining leave balance"
+- "tax deduction explanation"
+- "autocomplete al"
+- "hierarchy <emp_id>"</div>
+                    </div>
+                    <div class="chat-input-bar">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Type query here..." onkeypress="handleChatEnter(event)">
+                        <button onclick="sendChatMessage()" class="btn">Send Query</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3e. Fraud Checks View -->
+            <section id="anomalies" class="view-section">
+                <h1 class="view-title">Payroll Anomaly & Fraud Detection Checks</h1>
+                <button onclick="runAnomalyChecks()" class="btn" style="align-self: flex-start;">Run Safety Checks</button>
+                <div class="glass-card">
+                    <div class="table-container">
+                        <table id="anomalies-table">
+                            <thead>
+                                <tr>
+                                    <th>Anomaly Class</th>
+                                    <th>Severity Class</th>
+                                    <th>Trigger Event / Detailed Log</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: var(--text-secondary);">No audits run yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3f. Analytics View -->
+            <section id="analytics" class="view-section">
+                <h1 class="view-title">Analytics, Simulations & Predictions</h1>
+                <div class="metrics-grid">
+                    <div class="glass-card">
+                        <h3>Predicted Next Month Payroll Cost</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 4px 0 16px;">Linear regression projection</p>
+                        <div id="predicted-payroll-value" class="metric-value">$0.00</div>
+                    </div>
+                    <div class="glass-card">
+                        <h3>Promotion Priority Ranks</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 4px 0 16px;">Ranked performance metrics</p>
+                        <div id="promotion-candidate-display" style="font-size: 1.1rem; font-weight: 600; color: var(--success-color);">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 20px;">Net Salary Simulation Engine</h3>
+                    <form id="sim-form" onsubmit="runSimulation(event)">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                            <div class="form-group">
+                                <label for="sim-salary">Target Base Salary ($)</label>
+                                <input type="number" id="sim-salary" class="form-control" value="6000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="sim-bonus">Hypothetical Allowance/Bonus ($)</label>
+                                <input type="number" id="sim-bonus" class="form-control" value="1000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="sim-regime">Tax Regime Strategy</label>
+                                <select id="sim-regime" class="form-control">
+                                    <option value="NEW_REGIME">New Tax Regime</option>
+                                    <option value="OLD_REGIME">Old Tax Regime</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn" style="margin-top: 20px;">Calculate Net Pay Simulation</button>
+                    </form>
+                    <div id="sim-result" style="margin-top: 24px; font-size: 1.2rem; font-weight: 700; color: var(--accent-color); display: none;"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 4. JS LOGIC -->
+    <script>
+        let sessionToken = null;
+        let sessionRole = null;
+        let currentUserId = 1;
+
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    sessionToken = result.token;
+                    sessionRole = result.role;
+                    currentUserId = result.employeeId || 1;
+                    
+                    document.getElementById('user-display-name').innerText = u;
+                    document.getElementById('user-display-role').innerText = sessionRole;
+                    
+                    setupRoleViews();
+
+                    document.getElementById('login-page').style.opacity = 0;
+                    setTimeout(() => document.getElementById('login-page').style.display = 'none', 500);
+
+                    showToast("Login Successful! Welcome, " + u, "success");
+                    loadDashboardData();
+                    loadRosterData();
+                    loadLeaveData();
+                    loadPredictionData();
+                } else {
+                    showToast("Login Failed: " + result.message, "danger");
+                }
+            } catch (err) {
+                showToast("Network Error: " + err, "danger");
+            }
+        });
+
+        function toggleAuthMode(mode) {
+            if (mode === 'register') {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('register-form').style.display = 'block';
+                document.getElementById('auth-subtitle').innerText = 'Create a new Employee Account';
+            } else {
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('register-form').style.display = 'none';
+                document.getElementById('auth-subtitle').innerText = 'Enterprise Payroll & Workforce Portal';
+            }
+        }
+
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fName = document.getElementById('reg-firstname').value;
+            const lName = document.getElementById('reg-lastname').value;
+            const email = document.getElementById('reg-email').value;
+            const phone = document.getElementById('reg-phone').value;
+            const bankAcc = document.getElementById('reg-bank').value;
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName: fName,
+                        lastName: lName,
+                        email: email,
+                        phone: phone,
+                        bankAccount: bankAcc,
+                        username: username,
+                        password: password
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Account created! Please log in.", "success");
+                    document.getElementById('register-form').reset();
+                    toggleAuthMode('login');
+                } else {
+                    showToast("Registration Failed: " + result.message, "danger");
+                }
+            } catch(err) {
+                showToast("Network Error: " + err, "danger");
+            }
+        });
+
+        function showToast(message, type = "info") {
+            const t = document.getElementById('toast');
+            t.innerText = message;
+            t.style.display = "block";
+            t.style.borderLeftColor = type === "success" ? "var(--success-color)" : (type === "danger" ? "var(--danger-color)" : "var(--accent-color)");
+            setTimeout(() => t.style.display = "none", 4000);
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById(viewId).classList.add('active');
+            
+            // Find nav item by text
+            const textMatches = {
+                'dashboard': 'Overview',
+                'employees': 'Employees',
+                'leaves': 'Leave Requests',
+                'ai': 'AI HR Assistant',
+                'anomalies': 'Fraud Checks',
+                'analytics': 'Cost Predictions'
+            };
+            const label = textMatches[viewId];
+            document.querySelectorAll('.nav-item').forEach(i => {
+                if(i.innerText.includes(label)) i.classList.add('active');
+            });
+        }
+
+        function setupRoleViews() {
+            const isEmployee = (sessionRole === 'EMPLOYEE');
+            
+            // 1. Sidebar items visibility
+            document.getElementById('nav-employees').style.display = (sessionRole === 'ADMIN' || sessionRole === 'HR') ? 'block' : 'none';
+            document.getElementById('nav-anomalies').style.display = (sessionRole === 'ADMIN') ? 'block' : 'none';
+            document.getElementById('nav-analytics').style.display = (sessionRole === 'ADMIN' || sessionRole === 'FINANCE') ? 'block' : 'none';
+            
+            // 2. Overview views split
+            document.getElementById('admin-metrics').style.display = isEmployee ? 'none' : 'grid';
+            document.getElementById('dept-analysis-card').style.display = isEmployee ? 'none' : 'block';
+            document.getElementById('employee-metrics').style.display = isEmployee ? 'grid' : 'none';
+            document.getElementById('employee-profile-card').style.display = isEmployee ? 'block' : 'none';
+
+            // 3. Leaves views split
+            document.getElementById('manager-leaves-card').style.display = isEmployee ? 'none' : 'block';
+            document.getElementById('employee-leaves-container').style.display = isEmployee ? 'flex' : 'none';
+            document.getElementById('leaves-title').innerText = isEmployee ? 'My Leaves & Submissions' : 'Team Leave Approvals';
+        }
+
+        async function submitNewLeave(e) {
+            e.preventDefault();
+            const leaveType = document.getElementById('leave-type').value;
+            const reason = document.getElementById('leave-reason').value;
+            const startDate = document.getElementById('leave-start-date').value;
+            const endDate = document.getElementById('leave-end-date').value;
+
+            try {
+                const response = await fetch('/api/leaves/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        employeeId: currentUserId,
+                        leaveType: leaveType,
+                        startDate: startDate,
+                        endDate: endDate,
+                        reason: reason
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Leave request submitted successfully!", "success");
+                    document.getElementById('submit-leave-form').reset();
+                    loadLeaveData();
+                } else {
+                    showToast("Failed to submit request: " + result.message, "danger");
+                }
+            } catch(err) {
+                showToast("Network error: " + err, "danger");
+            }
+        }
+
+        async function loadDashboardData() {
+            if (sessionRole === 'EMPLOYEE') {
+                try {
+                    const r = await fetch(`/api/employee/profile?employeeId=${currentUserId}`);
+                    const e = await r.json();
+                    if (e.success) {
+                        document.getElementById('my-salary').innerText = "$" + e.salary.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        document.getElementById('my-position').innerText = e.position;
+                        document.getElementById('my-bank').innerText = e.bankAccount;
+                        document.getElementById('my-emp-id').innerText = e.id;
+                        document.getElementById('my-fullname').innerText = `${e.firstName} ${e.lastName}`;
+                        document.getElementById('my-email').innerText = e.email;
+                        document.getElementById('my-phone').innerText = e.phone || '-';
+                        document.getElementById('my-status').innerText = e.status;
+                        
+                        const statusBadge = document.getElementById('my-status');
+                        statusBadge.className = 'status-badge ' + (e.status === 'ACTIVE' ? 'status-active' : 'status-suspended');
+                    }
+                } catch(err) { console.error("Error loading employee profile dashboard:", err); }
+            } else {
+                try {
+                    const r = await fetch('/api/dashboard/stats');
+                    const d = await r.json();
+                    
+                    document.getElementById('metric-emp-count').innerText = d.activeEmployees || 0;
+                    document.getElementById('metric-payroll-cost').innerText = "$" + (d.monthlyCost || 0).toLocaleString();
+
+                    const tbody = document.querySelector('#dept-table tbody');
+                    tbody.innerHTML = '';
+                    if(d.departments) {
+                        d.departments.forEach(dept => {
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${dept.name}</td>
+                                    <td>$${dept.budget.toLocaleString()}</td>
+                                    <td>$${dept.spent.toLocaleString()}</td>
+                                    <td>
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            <div style="flex:1; height:6px; background:#1e293b; border-radius:3px; overflow:hidden;">
+                                                <div style="width:${Math.min(dept.utilization, 100)}%; height:100%; background:var(--accent-color);"></div>
+                                            </div>
+                                            <span>${dept.utilization.toFixed(1)}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    }
+                } catch (err) { console.error("Error loading dashboard data:", err); }
+            }
+        }
+
+        async function loadRosterData() {
+            if (sessionRole !== 'ADMIN' && sessionRole !== 'HR') return;
+            try {
+                const r = await fetch('/api/employees');
+                const emps = await r.json();
+                const tbody = document.querySelector('#emp-table tbody');
+                tbody.innerHTML = '';
+                emps.forEach(e => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${e.id}</td>
+                            <td>${e.firstName} ${e.lastName}</td>
+                            <td>${e.email}</td>
+                            <td>${e.position}</td>
+                            <td>$${e.salary.toLocaleString()}</td>
+                            <td><span class="status-badge ${e.status === 'ACTIVE' ? 'status-active' : 'status-suspended'}">${e.status}</span></td>
+                        </tr>
+                    `;
+                });
+            } catch (err) { console.error("Error loading roster data:", err); }
+        }
+
+        async function loadLeaveData() {
+            if (sessionRole === 'EMPLOYEE') {
+                try {
+                    const r = await fetch(`/api/leaves/my?employeeId=${currentUserId}`);
+                    const leaves = await r.json();
+                    const tbody = document.querySelector('#my-leaves-table tbody');
+                    tbody.innerHTML = '';
+                    if(leaves.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-secondary);">No leave history found.</td></tr>';
+                        return;
+                    }
+                    leaves.forEach(l => {
+                        let statusClass = 'status-pending';
+                        if (l.status === 'APPROVED') statusClass = 'status-active';
+                        if (l.status === 'REJECTED') statusClass = 'status-rejected';
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${l.id}</td>
+                                <td><span class="status-badge status-approved">${l.leaveType}</span></td>
+                                <td>${l.startDate}</td>
+                                <td>${l.endDate}</td>
+                                <td><span class="status-badge ${statusClass}">${l.status}</span></td>
+                                <td>${l.comment || '-'}</td>
+                            </tr>
+                        `;
+                    });
+                } catch(err) { console.error("Error loading personal leaves:", err); }
+            } else {
+                try {
+                    const r = await fetch('/api/leaves/pending');
+                    const leaves = await r.json();
+                    const tbody = document.querySelector('#leaves-table tbody');
+                    tbody.innerHTML = '';
+                    if(leaves.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-secondary);">No pending leave requests found.</td></tr>';
+                        return;
+                    }
+                    leaves.forEach(l => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${l.id}</td>
+                                <td>${l.employeeId}</td>
+                                <td>${l.leaveType}</td>
+                                <td>${l.startDate}</td>
+                                <td>${l.endDate}</td>
+                                <td><span class="status-badge status-pending">${l.status}</span></td>
+                                <td>
+                                    <div style="display:flex; gap:8px;">
+                                        <button onclick="processLeave(${l.id}, 'APPROVE')" class="btn" style="padding: 4px 8px; font-size: 0.75rem; background: var(--success-color);">Approve</button>
+                                        <button onclick="processLeave(${l.id}, 'REJECT')" class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;">Reject</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } catch (err) { console.error("Error loading leave requests:", err); }
+            }
+        }
+
+        async function processLeave(id, action) {
+            const comment = prompt("Enter manager comments:");
+            if (comment === null) return;
+            
+            try {
+                const r = await fetch('/api/leaves/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id, action: action, comment: comment, managerId: currentUserId })
+                });
+                const result = await r.json();
+                if(result.success) {
+                    showToast("Leave request processed successfully!", "success");
+                    loadLeaveData();
+                } else {
+                    showToast("Error processing request: " + result.message, "danger");
+                }
+            } catch(err) { showToast("Network error: " + err, "danger"); }
+        }
+
+        async function runAnomalyChecks() {
+            try {
+                showToast("Running database fraud verification...", "info");
+                const r = await fetch('/api/anomalies');
+                const list = await r.json();
+                const tbody = document.querySelector('#anomalies-table tbody');
+                tbody.innerHTML = '';
+                if(list.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--success-color);">All scans clean. No anomalies detected!</td></tr>';
+                    showToast("Database scan complete. 100% Secure.", "success");
+                    return;
+                }
+                list.forEach(a => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="status-badge status-rejected">${a.type}</span></td>
+                            <td><span class="status-badge ${a.severity === 'HIGH' ? 'status-rejected' : 'status-pending'}">${a.severity}</span></td>
+                            <td>${a.details}</td>
+                        </tr>
+                    `;
+                });
+                showToast(`Scan complete. Found ${list.length} warning anomalies!`, "danger");
+            } catch(err) { showToast("Verification run failed: " + err, "danger"); }
+        }
+
+        async function loadPredictionData() {
+            if (sessionRole !== 'ADMIN' && sessionRole !== 'FINANCE') return;
+            try {
+                const r = await fetch('/api/promotions');
+                const cands = await r.json();
+                
+                const display = document.getElementById('promotion-candidate-display');
+                if(cands && cands.length > 0) {
+                    display.innerText = `${cands[0].employeeName} (Rating: ${cands[0].rating}, Score: ${cands[0].score.toFixed(1)})`;
+                } else {
+                    display.innerText = "No candidates found";
+                }
+            } catch(err) { console.error(err); }
+        }
+
+        async function runSimulation(e) {
+            e.preventDefault();
+            const s = document.getElementById('sim-salary').value;
+            const b = document.getElementById('sim-bonus').value;
+            const r = document.getElementById('sim-regime').value;
+
+            try {
+                const response = await fetch('/api/analytics/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employeeId: currentUserId, baseSalary: parseFloat(s), bonus: parseFloat(b), taxRegime: r })
+                });
+                const d = await response.json();
+                if(d.success) {
+                    const el = document.getElementById('sim-result');
+                    el.innerText = `Simulated Net Salary: $${d.simulatedNet.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} / month`;
+                    el.style.display = "block";
+                } else {
+                    showToast("Simulation error: " + d.message, "danger");
+                }
+            } catch (err) { showToast("Simulation failed: " + err, "danger"); }
+        }
+
+        function handleChatEnter(e) {
+            if(e.key === 'Enter') sendChatMessage();
+        }
+
+        async function sendChatMessage() {
+            const inp = document.getElementById('chat-input');
+            const promptStr = inp.value.trim();
+            if(!promptStr) return;
+
+            const hist = document.getElementById('chat-history');
+            
+            // Append User bubble
+            hist.innerHTML += `<div class="chat-bubble user">${promptStr}</div>`;
+            inp.value = '';
+            hist.scrollTop = hist.scrollHeight;
+
+            try {
+                const r = await fetch('/api/ai/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: promptStr, employeeId: currentUserId })
+                });
+                const result = await r.json();
+                
+                // Append Bot bubble
+                hist.innerHTML += `<div class="chat-bubble bot">${result.answer}</div>`;
+                hist.scrollTop = hist.scrollHeight;
+            } catch(err) {
+                hist.innerHTML += `<div class="chat-bubble bot" style="color:var(--danger-color);">Error connecting to AI Server.</div>`;
+                hist.scrollTop = hist.scrollHeight;
+            }
+        }
+
+        function logout() {
+            sessionToken = null;
+            sessionRole = null;
+            document.getElementById('login-page').style.display = 'flex';
+            setTimeout(() => document.getElementById('login-page').style.opacity = 1, 10);
+            showToast("Successfully logged out.", "info");
+        }
+    </script>
+</body>
+</html>
