@@ -5,9 +5,11 @@ import com.payrollx.model.*;
 import com.payrollx.service.*;
 import com.payrollx.state.PendingState;
 import com.payrollx.util.SecurityUtils;
+import com.payrollx.config.DatabaseConnectionManager;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import java.sql.*;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -364,21 +366,48 @@ public class HttpServerController {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             try {
-                List<LeaveRequest> all = LEAVE_REQUEST_DAO.getByManagerId(4); // Seeded manager John Smith has reports
-                List<LeaveRequest> pending = all.stream().filter(l -> "PENDING".equalsIgnoreCase(l.getStatus())).collect(Collectors.toList());
+                Map<String, String> params = parseQueryParams(exchange.getRequestURI().getQuery());
+                String managerStr = params.get("managerId");
+                
+                List<LeaveRequest> pending;
+                if (managerStr != null && !managerStr.isEmpty()) {
+                    int managerId = Integer.parseInt(managerStr);
+                    pending = LEAVE_REQUEST_DAO.getPendingRequestsByManager(managerId);
+                } else {
+                    // Fetch all pending requests in the system for ADMIN/HR
+                    pending = new ArrayList<>();
+                    String sql = "SELECT * FROM leave_requests WHERE status = 'PENDING' ORDER BY start_date ASC";
+                    try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
+                         PreparedStatement stmt = conn.prepareStatement(sql);
+                         ResultSet rs = stmt.executeQuery()) {
+                        while (rs.next()) {
+                            LeaveRequest req = new LeaveRequest();
+                            req.setId(rs.getInt("id"));
+                            req.setEmployeeId(rs.getInt("employee_id"));
+                            req.setLeaveType(rs.getString("leave_type"));
+                            req.setStartDate(rs.getDate("start_date").toLocalDate());
+                            req.setEndDate(rs.getDate("end_date").toLocalDate());
+                            req.setStatus(rs.getString("status"));
+                            req.setManagerId(rs.getInt("manager_id"));
+                            req.setComment(rs.getString("comment"));
+                            pending.add(req);
+                        }
+                    }
+                }
                 
                 StringBuilder sb = new StringBuilder("[");
                 for (int i = 0; i < pending.size(); i++) {
                     LeaveRequest l = pending.get(i);
-                    sb.append(String.format("{\"id\":%d,\"employeeId\":%d,\"leaveType\":\"%s\",\"startDate\":\"%s\",\"endDate\":\"%s\",\"status\":\"%s\"}",
-                            l.getId(), l.getEmployeeId(), l.getLeaveType(), l.getStartDate(), l.getEndDate(), l.getStatus()));
+                    String comment = l.getComment() != null ? l.getComment().replace("\"", "\\\"") : "";
+                    sb.append(String.format("{\"id\":%d,\"employeeId\":%d,\"leaveType\":\"%s\",\"startDate\":\"%s\",\"endDate\":\"%s\",\"status\":\"%s\",\"comment\":\"%s\"}",
+                            l.getId(), l.getEmployeeId(), l.getLeaveType(), l.getStartDate(), l.getEndDate(), l.getStatus(), comment));
                     if (i < pending.size() - 1) sb.append(",");
                 }
                 sb.append("]");
                 sendResponse(exchange, 200, sb.toString());
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Pending leaves list error", e);
-                sendResponse(exchange, 200, "[]");
+                sendResponse(exchange, 200, "{\"success\":false,\"message\":\"" + e.getMessage() + "\"}");
             }
         }
     }
