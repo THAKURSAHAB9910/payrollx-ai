@@ -1049,7 +1049,11 @@
                 } catch(err) { console.error("Error loading personal leaves:", err); }
             } else {
                 try {
-                    const r = await fetch('/api/leaves/pending');
+                    let url = '/api/leaves/pending';
+                    if (sessionRole === 'MANAGER') {
+                        url += '?managerId=' + currentUserId;
+                    }
+                    const r = await fetch(url);
                     const leaves = await r.json();
                     const tbody = document.querySelector('#leaves-table tbody');
                     tbody.innerHTML = '';
