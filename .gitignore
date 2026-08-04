@@ -1,6 +1,8 @@
 # Maven Target Directory
 target/
 *.class
+backend/target/
+backend/*.class
 
 # Maven installation directory
 maven/

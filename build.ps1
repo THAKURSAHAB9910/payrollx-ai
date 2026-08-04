@@ -31,7 +31,9 @@ Write-Output "Checking Maven version..."
 mvn -version
 
 # Build project and run tests
+Push-Location -Path "backend"
 Write-Output "Compiling project and running JUnit tests..."
 mvn clean test
+Pop-Location
 
 Write-Output "Build and test completed successfully!"
