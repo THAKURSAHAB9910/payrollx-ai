@@ -782,6 +782,7 @@
                 const url = new URL(resource, window.location.origin);
                 const pathname = url.pathname;
                 const searchParams = url.searchParams;
+                const method = (options && options.method) ? options.method.toUpperCase() : 'GET';
                 
                 let body = {};
                 if (options && options.body) {
@@ -800,7 +801,7 @@
                 const db = getDb();
 
                 // 1. POST /api/auth/login
-                if (pathname === '/api/auth/login' && options.method === 'POST') {
+                if (pathname === '/api/auth/login' && method === 'POST') {
                     const user = db.users.find(u => u.username === body.username && u.password === body.password);
                     if (user) {
                         return mockResponse({
@@ -817,7 +818,7 @@
                 }
 
                 // 2. POST /api/auth/register
-                if (pathname === '/api/auth/register' && options.method === 'POST') {
+                if (pathname === '/api/auth/register' && method === 'POST') {
                     const newUserId = db.users.length + 1;
                     const newEmpId = db.employees.length + 1;
 
@@ -849,7 +850,7 @@
                 }
 
                 // 3. GET /api/employee/profile
-                if (pathname === '/api/employee/profile' && options.method === 'GET') {
+                if (pathname === '/api/employee/profile' && method === 'GET') {
                     const empId = parseInt(searchParams.get('employeeId'));
                     const emp = db.employees.find(e => e.id === empId);
                     if (emp) {
@@ -871,7 +872,7 @@
                 }
 
                 // 4. GET /api/dashboard/stats
-                if (pathname === '/api/dashboard/stats' && options.method === 'GET') {
+                if (pathname === '/api/dashboard/stats' && method === 'GET') {
                     const totalCost = db.employees
                         .filter(e => e.status === 'ACTIVE')
                         .reduce((sum, e) => sum + e.salary, 0);
@@ -897,12 +898,12 @@
                 }
 
                 // 5. GET /api/employees
-                if (pathname === '/api/employees' && options.method === 'GET') {
+                if (pathname === '/api/employees' && method === 'GET') {
                     return mockResponse(db.employees);
                 }
 
                 // 6. POST /api/employees/update-salary
-                if (pathname === '/api/employees/update-salary' && options.method === 'POST') {
+                if (pathname === '/api/employees/update-salary' && method === 'POST') {
                     const emp = db.employees.find(e => e.id === parseInt(body.employeeId));
                     if (emp) {
                         emp.salary = parseFloat(body.newSalary);
@@ -914,14 +915,14 @@
                 }
 
                 // 7. GET /api/leaves/my
-                if (pathname === '/api/leaves/my' && options.method === 'GET') {
+                if (pathname === '/api/leaves/my' && method === 'GET') {
                     const empId = parseInt(searchParams.get('employeeId'));
                     const list = db.leaves.filter(l => l.employeeId === empId);
                     return mockResponse(list);
                 }
 
                 // 8. GET /api/leaves/pending
-                if (pathname === '/api/leaves/pending' && options.method === 'GET') {
+                if (pathname === '/api/leaves/pending' && method === 'GET') {
                     const managerId = searchParams.get('managerId') ? parseInt(searchParams.get('managerId')) : null;
                     let list = db.leaves.filter(l => l.status === 'PENDING');
                     if (managerId) {
@@ -931,7 +932,7 @@
                 }
 
                 // 9. POST /api/leaves/submit
-                if (pathname === '/api/leaves/submit' && options.method === 'POST') {
+                if (pathname === '/api/leaves/submit' && method === 'POST') {
                     const newLeave = {
                         id: db.leaves.length + 1,
                         employeeId: parseInt(body.employeeId),
@@ -948,7 +949,7 @@
                 }
 
                 // 10. POST /api/leaves/action
-                if (pathname === '/api/leaves/action' && options.method === 'POST') {
+                if (pathname === '/api/leaves/action' && method === 'POST') {
                     const leave = db.leaves.find(l => l.id === parseInt(body.id));
                     if (leave) {
                         leave.status = body.action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
@@ -961,12 +962,12 @@
                 }
 
                 // 11. GET /api/anomalies
-                if (pathname === '/api/anomalies' && options.method === 'GET') {
+                if (pathname === '/api/anomalies' && method === 'GET') {
                     return mockResponse(db.anomalies);
                 }
 
                 // 12. GET /api/promotions
-                if (pathname === '/api/promotions' && options.method === 'GET') {
+                if (pathname === '/api/promotions' && method === 'GET') {
                     const recommendations = [
                         { employeeName: 'Alice Jones', rating: 4.5, score: 92.5 },
                         { employeeName: 'Sarah Connor', rating: 4.0, score: 81.0 }
@@ -975,7 +976,7 @@
                 }
 
                 // 13. POST /api/analytics/simulate
-                if (pathname === '/api/analytics/simulate' && options.method === 'POST') {
+                if (pathname === '/api/analytics/simulate' && method === 'POST') {
                     const gross = body.baseSalary + (body.baseSalary * 0.40) + 3600.0;
                     const pf = body.baseSalary * 0.12;
                     const taxRate = body.taxRegime === 'NEW_REGIME' ? 0.15 : 0.20;
@@ -985,7 +986,7 @@
                 }
 
                 // 14. POST /api/ai/query
-                if (pathname === '/api/ai/query' && options.method === 'POST') {
+                if (pathname === '/api/ai/query' && method === 'POST') {
                     const lower = body.query.toLowerCase();
                     let answer = '';
 
